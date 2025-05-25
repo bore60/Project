@@ -23,13 +23,11 @@
 # drive.mount('/content/drive')
 
 
-pip install matplotlib
-
 # Importing the libraries
 import pandas as pd
 import numpy as np
 
-import matplotlib.pyplot as plt
+import matplotlib as plt
 get_ipython().run_line_magic('matplotlib', 'inline')
 import seaborn as sns
 
