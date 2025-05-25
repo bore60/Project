@@ -48,7 +48,10 @@ pd.set_option('display.max_columns', 500)
 
 
 # Reading the dataset
-df = pd.read_csv('creditcard.csv')
+# df = pd.read_csv('creditcard.csv')
+# df.head()
+url = 'https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv'
+df = pd.read_csv(url)
 df.head()
 
 
