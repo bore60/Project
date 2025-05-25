@@ -48,10 +48,18 @@ pd.set_option('display.max_columns', 500)
 
 
 # Reading the dataset
-# df = pd.read_csv('creditcard.csv')
-# df.head()
-url = 'https://drive.google.com/file/d/1TUQwwhwJZhaOh7b1Vr0paSRI-iV2zOTQ/view?usp=sharing'
-df = pd.read_csv(url)
+import kagglehub
+import pandas as pd
+import os
+
+# Download the latest version of the dataset
+path = kagglehub.dataset_download("mlg-ulb/creditcardfraud")
+
+# Construct the full file path
+csv_path = os.path.join(path, "creditcard.csv")
+
+# Read the CSV file
+df = pd.read_csv(csv_path)
 df.head()
 
 
