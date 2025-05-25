@@ -23,8 +23,7 @@
 # drive.mount('/content/drive')
 
 
-# In[1]:
-
+pip install matplotlib
 
 # Importing the libraries
 import pandas as pd
