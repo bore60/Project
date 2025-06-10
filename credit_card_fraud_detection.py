@@ -92,14 +92,14 @@ classes
 
 
 # normal_share = round((classes[0]/df['Class'].count()*100),2)
-normal_share = 99.83
+normal_share = np.float64(99.83)
 
 
 # # In[10]:
 
 
 # fraud_share = round((classes[1]/df['Class'].count()*100),2)
-fraud_share = 0.17
+fraud_share = np.float64(0.17)
 
 
 # We can see that there is only 0.17% frauds. We will take care of the class imbalance later.
