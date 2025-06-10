@@ -29,7 +29,19 @@ import os
 
 # Read the CSV file
 df = pd.read_csv('credit_card.csv')
-df.head()
+
+# Safe path handling
+file_path = os.path.join(os.path.dirname(__file__), 'credit_card.csv')
+
+try:
+    df = pd.read_csv(file_path)
+    st.write("✅ CSV loaded successfully.")
+except FileNotFoundError:
+    st.error("❌ Could not find 'credit_card.csv'. Make sure it's in the repo and not in .gitignore.")
+    st.stop()
+except Exception as e:
+    st.error(f"❌ Error reading CSV: {e}")
+    st.stop()
 
 
 # In[4]:
