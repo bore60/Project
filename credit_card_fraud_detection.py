@@ -51,14 +51,8 @@ import kagglehub
 import pandas as pd
 import os
 
-# Download the latest version of the dataset
-path = kagglehub.dataset_download("mlg-ulb/creditcardfraud")
-
-# Construct the full file path
-csv_path = os.path.join(path, "creditcard.csv")
-
 # Read the CSV file
-df = pd.read_csv(credit_card.scv)
+df = pd.read_csv('creditcard.csv')
 df.head()
 
 
