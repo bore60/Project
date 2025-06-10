@@ -58,7 +58,7 @@ path = kagglehub.dataset_download("mlg-ulb/creditcardfraud")
 csv_path = os.path.join(path, "creditcard.csv")
 
 # Read the CSV file
-df = pd.read_csv(csv_path)
+df = pd.read_csv(credit_card.scv)
 df.head()
 
 
