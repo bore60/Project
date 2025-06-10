@@ -45,7 +45,8 @@ except Exception as e:
     st.error(f"❌ Error reading CSV: {e}")
     st.stop()
 
-
+st.write("📄 Preview of the CSV:")
+st.dataframe(df.head())
 # In[4]:
 
 
