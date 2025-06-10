@@ -91,15 +91,15 @@ classes
 # In[9]:
 
 
-normal_share = round((classes[0]/df['Class'].count()*100),2)
-normal_share
+# normal_share = round((classes[0]/df['Class'].count()*100),2)
+# normal_share
 
 
-# In[10]:
+# # In[10]:
 
 
-fraud_share = round((classes[1]/df['Class'].count()*100),2)
-fraud_share
+# fraud_share = round((classes[1]/df['Class'].count()*100),2)
+# fraud_share
 
 
 # We can see that there is only 0.17% frauds. We will take care of the class imbalance later.
