@@ -16,81 +16,94 @@ uploaded_file = st.file_uploader("Upload the creditcard.csv file", type=["csv"])
 
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
-
-    # === Basic info ===
-    st.write(f"✅ Loaded dataset with shape: {df.shape}")
-    st.write(f"Fraud cases: {df[df['Class'] == 1].shape[0]}, Non-fraud cases: {df[df['Class'] == 0].shape[0]}")
-
-    # === Visuals ===
-    st.subheader("📊 Class Distribution")
-    fig1, ax1 = plt.subplots()
-    sns.countplot(data=df, x="Class", ax=ax1)
-    st.pyplot(fig1)
-
-    # === Scale features ===
+    # Load dataset
+    df = pd.read_csv("creditcard.csv")
+    print(f"Dataset shape: {df.shape}")
+    print(f"Number of fraud cases: {df[df['Class'] == 1].shape[0]}")
+    print(f"Number of normal cases: {df[df['Class'] == 0].shape[0]}")
+    
+    # === Descriptive Statistics === #
+    print("\nDescriptive Statistics:")
+    print(df.describe())
+    
+    # === Class Distribution Visualization === #
+    plt.figure(figsize=(6, 4))
+    sns.countplot(data=df, x="Class")
+    plt.title("Class Distribution (0 = Non-Fraud, 1 = Fraud)")
+    plt.show()
+    
+    # === Correlation Matrix === #
+    plt.figure(figsize=(20, 12))
+    corr = df.corr()
+    sns.heatmap(corr, cmap="coolwarm", annot=False, linewidths=0.5)
+    plt.title("Correlation Matrix")
+    plt.show()
+    
+    # === Scale 'Time' and 'Amount' === #
     scaler = StandardScaler()
     df["scaled_amount"] = scaler.fit_transform(df["Amount"].values.reshape(-1, 1))
     df["scaled_time"] = scaler.fit_transform(df["Time"].values.reshape(-1, 1))
     df.drop(["Time", "Amount"], axis=1, inplace=True)
-
+    
     # Reorder columns
     scaled_features = ["scaled_amount", "scaled_time"]
-    remaining = [col for col in df.columns if col not in scaled_features + ["Class"]]
-    df = df[scaled_features + remaining + ["Class"]]
-
-    # === Split ===
+    remaining_features = [col for col in df.columns if col not in scaled_features + ["Class"]]
+    df = df[scaled_features + remaining_features + ["Class"]]
+    
+    # === Train-test split === #
     X = df.drop("Class", axis=1)
     y = df["Class"]
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
-
-    # === Clean & SMOTE ===
-    X_train = X_train.dropna()
-    y_train = y_train.loc[X_train.index]
-    X_train.reset_index(drop=True, inplace=True)
-    y_train.reset_index(drop=True, inplace=True)
-
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, stratify=y, random_state=42
+    )
+    
+    # === Apply SMOTE === #
     sm = SMOTE(random_state=42)
     X_resampled, y_resampled = sm.fit_resample(X_train, y_train)
-    st.write(f"✅ After SMOTE: Class 0: {sum(y_resampled == 0)}, Class 1: {sum(y_resampled == 1)}")
-
-    # === Train ===
+    print(f"After SMOTE - Class 0: {sum(y_resampled == 0)}, Class 1: {sum(y_resampled == 1)}")
+    
+    # === Train Random Forest === #
     clf = RandomForestClassifier(n_estimators=100, class_weight='balanced', n_jobs=-1, random_state=42)
     start_time = time.time()
     clf.fit(X_resampled, y_resampled)
-    st.success(f"✅ Model trained in {time.time() - start_time:.2f} seconds.")
-
-    # === Predictions ===
+    end_time = time.time()
+    print(f"\n✅ Model trained in {end_time - start_time:.2f} seconds.")
+    
+    # === Predictions === #
     y_pred = clf.predict(X_test)
-
-    # === Confusion Matrix ===
+    
+    # === Confusion Matrix === #
+    print("Unique predictions:", np.unique(y_pred))
     cm = confusion_matrix(y_test, y_pred, labels=[0, 1])
-    fig2, ax2 = plt.subplots()
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=[0, 1], yticklabels=[0, 1], ax=ax2)
-    ax2.set_title("Confusion Matrix")
-    ax2.set_xlabel("Predicted")
-    ax2.set_ylabel("Actual")
-    st.pyplot(fig2)
-
-    # === Classification Report ===
-    st.subheader("📋 Classification Report")
-    st.text(classification_report(y_test, y_pred, digits=4))
-
-    # === ROC-AUC ===
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=[0, 1], yticklabels=[0, 1])
+    plt.title("Confusion Matrix")
+    plt.xlabel("Predicted")
+    plt.ylabel("Actual")
+    plt.show()
+    
+    # === Classification Report === #
+    print("\nClassification Report:\n")
+    print(classification_report(y_test, y_pred, digits=4))
+    
+    # === ROC-AUC Score === #
     probas = clf.predict_proba(X_test)
     if probas.shape[1] == 2:
-        auc = roc_auc_score(y_test, probas[:, 1])
-        st.success(f"✅ ROC-AUC Score: {auc:.4f}")
+        auc_score = roc_auc_score(y_test, probas[:, 1])
+        print(f"ROC-AUC Score: {auc_score:.4f}")
     else:
-        st.warning("⚠️ ROC-AUC not available: Only one class predicted.")
-
-    # === Feature Importances ===
+        print("ROC-AUC Score: Model predicted only one class.")
+    
+    # === Feature Importance Plot === #
     importances = clf.feature_importances_
-    feat_df = pd.DataFrame({"Feature": X.columns, "Importance": importances})
+    feature_names = X.columns
+    feat_df = pd.DataFrame({"Feature": feature_names, "Importance": importances})
     feat_df = feat_df.sort_values(by="Importance", ascending=False)
-    fig3, ax3 = plt.subplots(figsize=(10, 6))
-    sns.barplot(data=feat_df.head(15), x="Importance", y="Feature", ax=ax3)
-    ax3.set_title("Top 15 Feature Importances")
-    st.pyplot(fig3)
+    
+    plt.figure(figsize=(12, 6))
+    sns.barplot(data=feat_df.head(15), x="Importance", y="Feature")
+    plt.title("Top 15 Feature Importances from Random Forest")
+    plt.tight_layout()
+    plt.show()
 
 else:
     st.warning("📂 Please upload the `creditcard.csv` file to continue.")
