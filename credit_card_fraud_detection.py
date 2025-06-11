@@ -18,7 +18,7 @@ from imblearn.over_sampling import SMOTE
 import time
 
 # === Streamlit App Header === #
-st.title("💳 Credit Card Fraud Detection \n Sylvia Chelangat Bore")
+st.title("💳 Credit Card Fraud Detection")
 st.markdown("**App by Sylvia Chelangat Bore**")
 st.markdown("Upload the **creditcard.csv** file to begin analysis.")
 
@@ -71,21 +71,29 @@ if uploaded_file is not None:
     X = df.drop("Class", axis=1)
     y = df["Class"]
 
-    # Make sure all features are numeric
+    # Check for non-numeric columns
     non_numeric_cols = X.select_dtypes(exclude=[np.number]).columns
     if len(non_numeric_cols) > 0:
         st.error(f"❌ Non-numeric columns found: {list(non_numeric_cols)}")
         X = X.select_dtypes(include=[np.number])
-        st.warning("⚠️ Non-numeric columns removed before resampling.")
-    
+        st.warning("⚠️ Non-numeric columns removed before training.")
+
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, stratify=y, random_state=42
     )
 
-    # Drop any remaining NaNs or infs
-    X_train.replace([np.inf, -np.inf], np.nan, inplace=True)
-    X_train.dropna(inplace=True)
-    y_train = y_train.loc[X_train.index]  # Realign y with cleaned X
+    # Clean training and testing data
+    for df_part in [X_train, X_test]:
+        df_part.replace([np.inf, -np.inf], np.nan, inplace=True)
+        df_part.dropna(inplace=True)
+
+    y_train = y_train.loc[X_train.index]
+    y_test = y_test.loc[X_test.index]
+
+    # Final check for numeric features
+    if not all([np.issubdtype(dtype, np.number) for dtype in X_train.dtypes]):
+        st.error("❌ Non-numeric features still present after cleaning. Cannot proceed.")
+        st.stop()
 
     # === Apply SMOTE === #
     sm = SMOTE(random_state=42)
