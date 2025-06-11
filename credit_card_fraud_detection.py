@@ -58,9 +58,17 @@ if uploaded_file is not None:
     remaining_features = [col for col in df.columns if col not in scaled_features + ["Class"]]
     df = df[scaled_features + remaining_features + ["Class"]]
 
+    # Clean any missing or infinite values
+    df.replace([np.inf, -np.inf], np.nan, inplace=True)
+    df.dropna(inplace=True)
+
     # === Train-test split === #
     X = df.drop("Class", axis=1)
     y = df["Class"]
+
+    # Make sure all features are numeric
+    assert np.issubdtype(X.dtypes.values[0], np.number), "Non-numeric data found!"
+    
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, stratify=y, random_state=42
     )
