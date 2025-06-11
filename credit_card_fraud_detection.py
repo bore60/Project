@@ -1,3 +1,7 @@
+# =============================================
+# 💳 Credit Card Fraud Detection Web App
+# 🧑‍💻 Owner: Sylvia Chelangat Bore
+# =============================================
 
 import streamlit as st
 import pandas as pd
@@ -15,6 +19,7 @@ import time
 
 # === Streamlit App Header === #
 st.title("💳 Credit Card Fraud Detection")
+st.markdown("**App by Sylvia Chelangat Bore**")
 st.markdown("Upload the **creditcard.csv** file to begin analysis.")
 
 # === File Uploader === #
@@ -67,8 +72,11 @@ if uploaded_file is not None:
     y = df["Class"]
 
     # Make sure all features are numeric
-    assert np.issubdtype(X.dtypes.values[0], np.number), "Non-numeric data found!"
-    
+    non_numeric_cols = X.select_dtypes(exclude=[np.number]).columns
+    if len(non_numeric_cols) > 0:
+        st.error(f"❌ Non-numeric columns found: {list(non_numeric_cols)}")
+        st.stop()
+
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, stratify=y, random_state=42
     )
