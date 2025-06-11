@@ -17,13 +17,13 @@ import time
 # Load dataset
 # df = pd.read_csv("creditcard.csv")
 
-# Set the path to the file you'd like to load
-file_path = ""
-# Load the latest version
+# Correct path to the dataset file within the dataset
+file_path = "creditcard.csv"
+# Load the dataset directly into a Pandas DataFrame
 df = kagglehub.load_dataset(
-  KaggleDatasetAdapter.PANDAS,
-  "mlg-ulb/creditcardfraud",
-  file_path
+    KaggleDatasetAdapter.PANDAS,
+    "mlg-ulb/creditcardfraud",
+    file_path
 )
 
 print(f"Loaded dataset with shape: {df.shape}")
