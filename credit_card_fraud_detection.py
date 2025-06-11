@@ -18,7 +18,7 @@ from imblearn.over_sampling import SMOTE
 import time
 
 # === Streamlit App Header === #
-st.title("💳 Credit Card Fraud Detection")
+st.title("💳 Credit Card Fraud Detection \n Sylvia Chelangat Bore")
 st.markdown("**App by Sylvia Chelangat Bore**")
 st.markdown("Upload the **creditcard.csv** file to begin analysis.")
 
@@ -75,11 +75,17 @@ if uploaded_file is not None:
     non_numeric_cols = X.select_dtypes(exclude=[np.number]).columns
     if len(non_numeric_cols) > 0:
         st.error(f"❌ Non-numeric columns found: {list(non_numeric_cols)}")
-        st.stop()
-
+        X = X.select_dtypes(include=[np.number])
+        st.warning("⚠️ Non-numeric columns removed before resampling.")
+    
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, stratify=y, random_state=42
     )
+
+    # Drop any remaining NaNs or infs
+    X_train.replace([np.inf, -np.inf], np.nan, inplace=True)
+    X_train.dropna(inplace=True)
+    y_train = y_train.loc[X_train.index]  # Realign y with cleaned X
 
     # === Apply SMOTE === #
     sm = SMOTE(random_state=42)
