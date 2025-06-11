@@ -15,6 +15,7 @@ import time
 
 # === Streamlit App Header === #
 st.title("💳 Credit Card Fraud Detection")
+st.markdown("**👩‍💻 Created by Sylvia Chelangat Bore**")
 st.markdown("Upload the **creditcard.csv** file to begin analysis.")
 
 # === File Uploader === #
