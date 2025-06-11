@@ -17,6 +17,8 @@ from imblearn.over_sampling import SMOTE
 
 import time
 
+st.set_option("deprecation.showPyplotGlobalUse", False)
+
 # === Streamlit App Header === #
 st.title("💳 Credit Card Fraud Detection")
 st.markdown("**App by Sylvia Chelangat Bore**")
@@ -30,6 +32,7 @@ if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
     st.success(f"✅ Dataset loaded! Shape: {df.shape}")
 
+    # === Basic Info === #
     st.write(f"Number of fraud cases: {df[df['Class'] == 1].shape[0]}")
     st.write(f"Number of normal cases: {df[df['Class'] == 0].shape[0]}")
 
@@ -63,7 +66,7 @@ if uploaded_file is not None:
     remaining_features = [col for col in df.columns if col not in scaled_features + ["Class"]]
     df = df[scaled_features + remaining_features + ["Class"]]
 
-    # Clean any missing or infinite values
+    # Clean missing/infinite values
     df.replace([np.inf, -np.inf], np.nan, inplace=True)
     df.dropna(inplace=True)
 
@@ -71,7 +74,7 @@ if uploaded_file is not None:
     X = df.drop("Class", axis=1)
     y = df["Class"]
 
-    # Check for non-numeric columns
+    # Check non-numeric
     non_numeric_cols = X.select_dtypes(exclude=[np.number]).columns
     if len(non_numeric_cols) > 0:
         st.error(f"❌ Non-numeric columns found: {list(non_numeric_cols)}")
@@ -82,65 +85,65 @@ if uploaded_file is not None:
         X, y, test_size=0.2, stratify=y, random_state=42
     )
 
-    # Clean training and testing data
-    for df_part in [X_train, X_test]:
-        df_part.replace([np.inf, -np.inf], np.nan, inplace=True)
-        df_part.dropna(inplace=True)
+    # Clean training data again (important!)
+    X_train = X_train.replace([np.inf, -np.inf], np.nan).dropna()
+    y_train = y_train.loc[X_train.index]  # Align target with cleaned features
 
-    y_train = y_train.loc[X_train.index]
-    y_test = y_test.loc[X_test.index]
-
-    # Final check for numeric features
-    if not all([np.issubdtype(dtype, np.number) for dtype in X_train.dtypes]):
-        st.error("❌ Non-numeric features still present after cleaning. Cannot proceed.")
-        st.stop()
-
-    # === Apply SMOTE === #
-    sm = SMOTE(random_state=42)
-    X_resampled, y_resampled = sm.fit_resample(X_train, y_train)
-    st.success(f"✅ After SMOTE - Class 0: {sum(y_resampled == 0)}, Class 1: {sum(y_resampled == 1)}")
-
-    # === Train Random Forest === #
-    clf = RandomForestClassifier(n_estimators=100, class_weight='balanced', n_jobs=-1, random_state=42)
-    start_time = time.time()
-    clf.fit(X_resampled, y_resampled)
-    end_time = time.time()
-    st.success(f"✅ Model trained in {end_time - start_time:.2f} seconds.")
-
-    # === Predictions === #
-    y_pred = clf.predict(X_test)
-
-    # === Confusion Matrix === #
-    cm = confusion_matrix(y_test, y_pred, labels=[0, 1])
-    fig3, ax3 = plt.subplots()
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=[0, 1], yticklabels=[0, 1], ax=ax3)
-    ax3.set_title("Confusion Matrix")
-    ax3.set_xlabel("Predicted")
-    ax3.set_ylabel("Actual")
-    st.pyplot(fig3)
-
-    # === Classification Report === #
-    st.subheader("📋 Classification Report")
-    st.text(classification_report(y_test, y_pred, digits=4))
-
-    # === ROC-AUC Score === #
-    probas = clf.predict_proba(X_test)
-    if probas.shape[1] == 2:
-        auc_score = roc_auc_score(y_test, probas[:, 1])
-        st.success(f"✅ ROC-AUC Score: {auc_score:.4f}")
+    if X_train.shape[0] != y_train.shape[0]:
+        st.error("❌ X_train and y_train length mismatch after cleaning!")
+    elif X_train.empty:
+        st.error("❌ X_train is empty after cleaning! Cannot train model.")
     else:
-        st.warning("⚠️ ROC-AUC Score not available: Model predicted only one class.")
+        # === Apply SMOTE === #
+        try:
+            sm = SMOTE(random_state=42)
+            X_resampled, y_resampled = sm.fit_resample(X_train, y_train)
+            st.success(f"✅ SMOTE applied! Class 0: {sum(y_resampled == 0)}, Class 1: {sum(y_resampled == 1)}")
 
-    # === Feature Importance Plot === #
-    importances = clf.feature_importances_
-    feature_names = X.columns
-    feat_df = pd.DataFrame({"Feature": feature_names, "Importance": importances})
-    feat_df = feat_df.sort_values(by="Importance", ascending=False)
+            # === Train Random Forest === #
+            clf = RandomForestClassifier(n_estimators=100, class_weight='balanced', n_jobs=-1, random_state=42)
+            start_time = time.time()
+            clf.fit(X_resampled, y_resampled)
+            end_time = time.time()
+            st.success(f"✅ Model trained in {end_time - start_time:.2f} seconds.")
 
-    fig4, ax4 = plt.subplots(figsize=(12, 6))
-    sns.barplot(data=feat_df.head(15), x="Importance", y="Feature", ax=ax4)
-    ax4.set_title("Top 15 Feature Importances from Random Forest")
-    st.pyplot(fig4)
+            # === Predictions === #
+            y_pred = clf.predict(X_test)
+
+            # === Confusion Matrix === #
+            cm = confusion_matrix(y_test, y_pred, labels=[0, 1])
+            fig3, ax3 = plt.subplots()
+            sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=[0, 1], yticklabels=[0, 1], ax=ax3)
+            ax3.set_title("Confusion Matrix")
+            ax3.set_xlabel("Predicted")
+            ax3.set_ylabel("Actual")
+            st.pyplot(fig3)
+
+            # === Classification Report === #
+            st.subheader("📋 Classification Report")
+            st.text(classification_report(y_test, y_pred, digits=4))
+
+            # === ROC-AUC Score === #
+            probas = clf.predict_proba(X_test)
+            if probas.shape[1] == 2:
+                auc_score = roc_auc_score(y_test, probas[:, 1])
+                st.success(f"✅ ROC-AUC Score: {auc_score:.4f}")
+            else:
+                st.warning("⚠️ ROC-AUC Score not available: Model predicted only one class.")
+
+            # === Feature Importance Plot === #
+            importances = clf.feature_importances_
+            feature_names = X.columns
+            feat_df = pd.DataFrame({"Feature": feature_names, "Importance": importances})
+            feat_df = feat_df.sort_values(by="Importance", ascending=False)
+
+            fig4, ax4 = plt.subplots(figsize=(12, 6))
+            sns.barplot(data=feat_df.head(15), x="Importance", y="Feature", ax=ax4)
+            ax4.set_title("Top 15 Feature Importances from Random Forest")
+            st.pyplot(fig4)
+
+        except Exception as e:
+            st.error(f"❌ Error during SMOTE or training: {str(e)}")
 
 else:
     st.info("👆 Please upload the `creditcard.csv` file to start.")
