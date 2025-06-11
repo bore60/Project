@@ -15,10 +15,11 @@ import time
 
 # === Streamlit App Header === #
 st.title("💳 Credit Card Fraud Detection")
+st.title("Download the dataset here: https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud")
 st.markdown("**👩‍💻 Created by Sylvia Chelangat Bore**")
 st.markdown("Upload the **creditcard.csv** file to begin analysis.")
 
-print("DOwnload the dataset here: https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud")
+
 # === File Uploader === #
 uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 
