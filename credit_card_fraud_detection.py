@@ -10,22 +10,21 @@ from sklearn.preprocessing import StandardScaler
 from imblearn.over_sampling import SMOTE
 import zipfile
 import os
+from kagglehub import KaggleDatasetAdapter
 
 import time
 
 # Load dataset
 # df = pd.read_csv("creditcard.csv")
 
-# Download dataset (zipped)
-path = kagglehub.dataset_download("mlg-ulb/creditcardfraud")
-# Extract zip file
-zip_path = os.path.join(path, "creditcardfraud.zip")
-extract_path = os.path.join(path, "extracted")
-with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-    zip_ref.extractall(extract_path)
-# Load the dataset
-csv_path = os.path.join(extract_path, "creditcard.csv")
-df = pd.read_csv(csv_path)
+# Set the path to the file you'd like to load
+file_path = ""
+# Load the latest version
+df = kagglehub.load_dataset(
+  KaggleDatasetAdapter.PANDAS,
+  "mlg-ulb/creditcardfraud",
+  file_path
+)
 
 print(f"Loaded dataset with shape: {df.shape}")
 print(f"Dataset shape: {df.shape}")
