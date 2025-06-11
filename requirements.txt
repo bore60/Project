@@ -4,6 +4,7 @@ streamlit
 pandas
 scikit-learn
 kagglehub
+kaggle
 xgboost
 SMOTE
 imblearn
