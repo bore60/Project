@@ -12,7 +12,20 @@ from imblearn.over_sampling import SMOTE
 import time
 
 # Load dataset
-df = pd.read_csv("creditcard.csv")
+# df = pd.read_csv("creditcard.csv")
+
+# Download dataset (zipped)
+path = kagglehub.dataset_download("mlg-ulb/creditcardfraud")
+# Extract zip file
+zip_path = os.path.join(path, "creditcardfraud.zip")
+extract_path = os.path.join(path, "extracted")
+with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+    zip_ref.extractall(extract_path)
+# Load the dataset
+csv_path = os.path.join(extract_path, "creditcard.csv")
+df = pd.read_csv(csv_path)
+
+print(f"Loaded dataset with shape: {df.shape}")
 print(f"Dataset shape: {df.shape}")
 print(f"Number of fraud cases: {df[df['Class'] == 1].shape[0]}")
 print(f"Number of normal cases: {df[df['Class'] == 0].shape[0]}")
