@@ -17,7 +17,7 @@ from imblearn.over_sampling import SMOTE
 
 import time
 
-st.set_option("deprecation.showPyplotGlobalUse", False)
+#st.set_option("deprecation.showPyplotGlobalUse", False)
 
 # === Streamlit App Header === #
 st.title("💳 Credit Card Fraud Detection")
